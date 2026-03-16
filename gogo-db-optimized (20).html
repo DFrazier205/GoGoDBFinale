@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO-GO DB - The Go-Go Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --sage-light: #CBDED3;
+            --sage-medium: #8BA49A;
+            --beige: #D2C49E;
+            --forest: #3B6255;
+            --cream: #E2DFDA;
+            --white: #FFFFFF;
+            --off-white: #FAFAF8;
+            --dark-text: #2C3E3A;
+            --medium-text: #5A6B65;
+            --light-text: #8B9A94;
+            --shadow-sm: 0 2px 4px rgba(59, 98, 85, 0.06);
+            --shadow-md: 0 4px 12px rgba(59, 98, 85, 0.08);
+            --shadow-lg: 0 8px 24px rgba(59, 98, 85, 0.10);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--off-white);
+            color: var(--dark-text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* Landing Page */
+        .landing {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--sage-light) 0%, var(--cream) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Landing with custom background - hardcoded like chat */
+        .landing-with-bg {
+            background: 
+                linear-gradient(135deg, 
+                    rgba(203, 222, 211, 0.30) 0%, 
+                    rgba(226, 223, 218, 0.30) 100%),
+                url('https://www.dropbox.com/scl/fi/k92e5wkuzxuneayicjq4b/gogo-db-bg-2.png?rlkey=mv2e8bp337ynlj2mxxwapwchc&st=pku2vi6o&raw=1') center/cover no-repeat fixed !important;
+        }
+        
+        .geometric-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            opacity: 0.3;
+        }
+        
+        .geo-shape {
+            position: absolute;
+            border-radius: 50%;
+            mix-blend-mode: multiply;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .geo-shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--sage-medium) 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+        }
+        
+        .geo-shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--beige) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+        
+        .geo-shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--sage-light) 0%, transparent 70%);
+            top: 50%;
+            left: 10%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        
+        .content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .main-content {
+            text-align: center;
+            max-width: 72rem;
+            width: 100%;
+            opacity: 0;
+            animation: fadeUp 1.2s ease-out 0.3s forwards;
+        }
+        
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .main-content h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: clamp(4.5rem, 12vw, 8.5rem);
+            letter-spacing: -0.03em;
+            line-height: 0.9;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+            background: radial-gradient(
+                circle at 30% 50%,
+                var(--beige) 0%,
+                var(--sage-medium) 30%,
+                var(--forest) 60%
+            );
+            background-size: 150% 150%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                background-position: 0% 50%;
+                background-size: 150% 150%;
+            }
+            50% { 
+                background-position: 100% 50%;
+                background-size: 200% 200%;
+            }
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% center;
+            }
+            50% {
+                background-position: 100% center;
+            }
+            100% {
+                background-position: 0% center;
+            }
+        }
+        
+        .main-content h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--beige) 0%, var(--sage-medium) 100%);
+            border-radius: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: expand 1s ease-out 0.8s forwards;
+        }
+        
+        @keyframes expand {
+            to { transform: scaleX(1); }
+        }
+        
+        .subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            font-size: clamp(1.25rem, 3vw, 2rem);
+            color: var(--medium-text);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes gradualSpacing {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .subtitle span {
+            display: inline-block;
+            opacity: 0;
+            animation: gradualSpacing 0.5s ease-out forwards;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05));
+        }
+        
+        .tagline {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--forest);
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeUp 1s ease-out 1.2s forwards;
+            font-style: italic;
+            position: relative;
+        }
+        
+        .tagline::before,
+        .tagline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--sage-medium));
+            transform: translateY(-50%);
+        }
+        
+        .tagline::before {
+            left: -60px;
+            background: linear-gradient(270deg, transparent, var(--sage-medium));
+        }
+        
+        .tagline::after {
+            right: -60px;
+        }
+        
+        .chat-bar {
+            display: flex;
+            align-items: center;
+            max-width: 44rem;
+            width: 100%;
+            margin: 0 auto 3rem;
+            background: var(--white);
+            border-radius: 100px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            transition: all 0.3s var(--transition);
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 1.2s forwards;
+        }
+        
+        .chat-bar:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .chat-placeholder {
+            flex: 1;
+            padding: 1rem 2rem;
+            color: var(--light-text);
+            font-size: 1.125rem;
+            user-select: none;
+            position: relative;
+            min-height: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-placeholder::after {
+            content: '|';
+            color: var(--forest);
+            font-weight: 300;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .chat-button {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, var(--forest) 0%, #2A4A40 100%);
+            border: none;
+            border-radius: 100px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s var(--transition);
+        }
+        
+        .chat-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(59, 98, 85, 0.3);
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 68rem;
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeUp 1s ease-out 1.5s forwards;
+        }
+        
+        .info-card {
+            background: var(--white);
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s var(--transition);
+            border: 1px solid rgba(139, 164, 154, 0.1);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--sage-medium);
+        }
+        
+        .info-card-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--sage-light), var(--sage-medium));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--forest);
+        }
+        
+        .info-card h3 {
+            font-size: 1.125rem;
+            color: var(--forest);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .info-card p {
+            font-size: 0.875rem;
+            color: var(--medium-text);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .submit-link {
+            display: inline-block;
+            color: var(--forest);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid var(--sage-medium);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s var(--transition);
+            background: rgba(203, 222, 211, 0.1);
+        }
+        
+        .submit-link:hover {
+            background: var(--sage-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Chat Interface */
+        .chat-page {
+            display: none;
+            min-height: 100vh;
+            background: var(--off-white);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--white);
+            border-right: 1px solid rgba(139, 164, 154, 0.15);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.03);
+            transform: translateX(-100%);
+            animation: slideIn 0.6s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            to { transform: translateX(0); }
+        }
+        
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: var(--forest);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo::before {
+            content: '';
+            width: 8px;
+            height: 32px;
+            background: linear-gradient(180deg, var(--beige) 0%, var(--sage-medium) 100%);
+            border-radius: 4px;
+        }
+        
+        .new-chat-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--sage-light) 0%, var(--sage-medium) 20%);
+            color: var(--forest);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 2rem;
+            transition: all 0.3s var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chat-history-section {
+            flex: 1;
+            overflow-y: auto;
+            margin: 0 -0.5rem;
+            padding: 0 0.5rem;
+        }
+        
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--light-text);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .chat-history-item {
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            color: var(--medium-text);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s var(--transition);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            padding-left: 2.25rem;
+        }
+        
+        .chat-history-item::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--sage-light);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-history-item:hover {
+            background: var(--cream);
+            color: var(--dark-text);
+        }
+        
+        .chat-history-item.active {
+            background: linear-gradient(90deg, rgba(139, 164, 154, 0.15) 0%, transparent 100%);
+            color: var(--forest);
+            font-weight: 500;
+        }
+        
+        .chat-history-item.active::before {
+            width: 8px;
+            height: 16px;
+            border-radius: 4px;
+            background: var(--forest);
+        }
+        
+        .chat-main {
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chat-header {
+            background: var(--white);
+            border-bottom: 1px solid rgba(139, 164, 154, 0.15);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .chat-header h2 {
+            font-size: 1.25rem;
+            color: var(--forest);
+            font-weight: 600;
+        }
+        
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: transparent;
+        }
+        
+        /* Wave Background */
+        .chat-area.custom-bg-subtle {
+            background: 
+                linear-gradient(to bottom, 
+                    rgba(250, 250, 248, 0.90) 0%, 
+                    rgba(250, 250, 248, 0.85) 100%),
+                url('https://www.dropbox.com/scl/fi/wii70ofygjlrl8ntgwxyb/GPT-2-1-1.png?rlkey=6a47dt6a48gwx47g8x45vq764&st=7kzvflhw&raw=1') center/cover no-repeat fixed !important;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            max-width: 600px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out 0.3s forwards;
+        }
+        
+        .welcome-message h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--forest);
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-message p {
+            color: var(--medium-text);
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+        }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+        
+        .chip {
+            padding: 0.625rem 1.25rem;
+            background: var(--white);
+            border: 1px solid var(--sage-light);
+            border-radius: 100px;
+            color: var(--forest);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .chip:hover {
+            background: var(--sage-light);
+            border-color: var(--sage-medium);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        #messagesContainer {
+            width: 100%;
+            max-width: 48rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2rem 0;
+        }
+        
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: fadeUp 0.4s ease-out forwards;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            line-height: 1.6;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--forest) 0%, #2A4A40 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .message.assistant .message-content {
+            background: var(--white);
+            color: var(--dark-text);
+            border: 1px solid rgba(139, 164, 154, 0.1);
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 1rem 1.5rem;
+            background: var(--white);
+            border-radius: 20px;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(139, 164, 154, 0.1);
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--sage-medium);
+            border-radius: 50%;
+            animation: typingPulse 1.4s ease-in-out infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingPulse {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+        
+        .chat-input-area {
+            background: var(--white);
+            border-top: 1px solid rgba(139, 164, 154, 0.15);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+        }
+        
+        .chat-input-wrapper {
+            max-width: 48rem;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .input-container {
+            flex: 1;
+            position: relative;
+            background: var(--off-white);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .input-container:focus-within {
+            background: var(--white);
+            border-color: var(--sage-medium);
+            box-shadow: 0 0 0 3px rgba(139, 164, 154, 0.1);
+        }
+        
+        .chat-text-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--dark-text);
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            min-height: 56px;
+            max-height: 120px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .send-button {
+            padding: 1rem;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--forest) 0%, #2A4A40 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s var(--transition);
+        }
+        
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .page-transition {
+            position: fixed;
+            inset: 0;
+            background: var(--sage-light);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .page-transition.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .transition-logo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 3rem;
+            color: var(--forest);
+            opacity: 0;
+            transform: scale(0.8);
+            animation: logoScale 0.8s ease forwards;
+        }
+        
+        @keyframes logoScale {
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 30;
+            padding: 0.75rem;
+            background: var(--white);
+            border: 1px solid var(--sage-light);
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--sage-light);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--sage-medium);
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            h1 { font-size: clamp(3rem, 12vw, 5rem); }
+            .subtitle { font-size: 1rem; letter-spacing: 0.2em; }
+            .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .chat-main { margin-left: 0; }
+            .chat-bar { flex-direction: column; padding: 1rem; }
+            .chat-placeholder { text-align: center; padding: 1rem; }
+            .chat-button { width: 100%; justify-content: center; }
+            .info-cards { 
+                grid-template-columns: 1fr; 
+                max-width: 28rem; 
+            }
+            .message-content { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Transition -->
+    <div class="page-transition" id="pageTransition">
+        <div class="transition-logo">GO-GO DB</div>
+    </div>
+    
+    <!-- Landing Page -->
+    <div class="landing landing-with-bg" id="landingPage">
+        <canvas id="threejs-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0.8;"></canvas>
+        <!-- Lighting overlay effects from user request -->
+        <div class="absolute inset-0 pointer-events-none z-0 mix-blend-screen opacity-50">
+            <div class="absolute top-1/4 left-1/3 w-96 h-96 bg-gray-400 rounded-full blur-3xl animate-pulse" style="animation-duration: 3s"></div>
+            <div class="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white rounded-full blur-2xl animate-pulse" style="animation-duration: 2s; animation-delay: 1s"></div>
+            <div class="absolute top-1/2 right-1/3 w-64 h-64 bg-gray-500 rounded-full blur-xl animate-pulse" style="animation-duration: 4s; animation-delay: 0.5s"></div>
+        </div>
+        <div class="geometric-bg">
+            <div class="geo-shape"></div>
+            <div class="geo-shape"></div>
+            <div class="geo-shape"></div>
+        </div>
+        
+        <div class="content">
+            <div class="main-content">
+                <h1>GO-GO DB</h1>
+                <p class="subtitle" id="subtitleText"></p>
+                <script>
+                    const subText = "The Go-Go Database";
+                    const subtitleEl = document.getElementById('subtitleText');
+                    subText.split('').forEach((char, i) => {
+                        const span = document.createElement('span');
+                        span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                        span.style.animationDelay = `${1 + i * 0.04}s`;
+                        subtitleEl.appendChild(span);
+                    });
+                </script>
+                <p class="tagline">The definitive digital home of Go-Go music culture</p>
+                
+                <div class="chat-bar">
+                    <div class="chat-placeholder" id="placeholderText">Ask about Chuck Brown...</div>
+                    <button class="chat-button" onclick="showChat()">
+                        <span>Start Exploring</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 2.5rem;">
+                    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 2rem; color: var(--forest); margin-bottom: 0.5rem; min-height: 48px;">
+                        <span id="typewriterText"></span><span id="typewriterCursor" class="ml-1 transition-opacity duration-75">|</span>
+                    </h2>
+                    <script>
+                        (function() {
+                            const words = ["Want to Add or Update Information?"];
+                            const speed = 100;
+                            const delayBetweenWords = 2000;
+                            
+                            let displayText = "";
+                            let isDeleting = false;
+                            let wordIndex = 0;
+                            let charIndex = 0;
+                            
+                            const el = document.getElementById("typewriterText");
+                            const cursor = document.getElementById("typewriterCursor");
+                            
+                            // Cursor blinking loop
+                            setInterval(() => {
+                                cursor.style.opacity = cursor.style.opacity === "0" ? "1" : "0";
+                            }, 500);
+
+                            function type() {
+                                const currentWord = words[wordIndex];
+                                
+                                if (!isDeleting) {
+                                    if (charIndex < currentWord.length) {
+                                        displayText = currentWord.substring(0, charIndex + 1);
+                                        charIndex++;
+                                        el.textContent = displayText;
+                                        setTimeout(type, speed);
+                                    } else {
+                                        setTimeout(() => {
+                                            isDeleting = true;
+                                            type();
+                                        }, delayBetweenWords);
+                                    }
+                                } else {
+                                    if (charIndex > 0) {
+                                        displayText = currentWord.substring(0, charIndex - 1);
+                                        charIndex--;
+                                        el.textContent = displayText;
+                                        setTimeout(type, speed / 2);
+                                    } else {
+                                        isDeleting = false;
+                                        wordIndex = (wordIndex + 1) % words.length;
+                                        setTimeout(type, speed);
+                                    }
+                                }
+                            }
+                            
+                            // Start typewriter when it comes into view so the user actually sees it!
+                            const observer = new IntersectionObserver((entries) => {
+                                if (entries[0].isIntersecting) {
+                                    setTimeout(type, 800);
+                                    observer.disconnect();
+                                }
+                            });
+                            observer.observe(el);
+                        })();
+                    </script>
+                    <p style="color: var(--medium-text); font-size: 1.125rem; max-width: 600px; margin: 0 auto;">Help us preserve Go-Go culture by contributing accurate information to the database.</p>
+                </div>
+                
+                <div class="grid place-items-center opacity-0 mt-20 mb-32 cursor-pointer -translate-x-[4.5rem]" style="grid-template-areas: 'stack'; animation: fadeUp 1s ease-out 1.5s forwards;">
+                    <!-- History Card -->
+                    <div style="grid-area: stack; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" class="hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-gray-300 before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-white/40 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0 relative flex h-36 w-[22rem] -skew-y-[8deg] select-none flex-col justify-between rounded-xl border-2 border-white/40 bg-gray-100/90 backdrop-blur-sm px-4 py-3 transition-all duration-700 after:absolute after:-right-1 after:top-[-5%] after:h-[110%] after:w-[20rem] after:bg-gradient-to-l after:from-white after:to-transparent after:content-[''] hover:border-white/80 hover:bg-gray-100 [&>*]:flex [&>*]:items-center [&>*]:gap-2">
+                        <div class="z-10">
+                            <span class="relative inline-flex flex-shrink-0 rounded-full bg-[#3B6255] p-2 justify-center items-center" style="width: 36px; height: 36px;">
+                                <span style="font-size: 1rem; color: white;">🏛</span>
+                            </span>
+                            <p class="text-xl font-medium text-[#2C3E3A] pl-2">History</p>
+                        </div>
+                        <p class="whitespace-nowrap text-lg text-[#2C3E3A] z-10 w-full overflow-hidden text-ellipsis">Submit historical updates</p>
+                        <p class="text-sm font-medium text-[#8BA49A] z-10">Contribute Here →</p>
+                    </div>
+
+                    <!-- Music Card -->
+                    <div style="grid-area: stack; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" class="translate-x-12 translate-y-12 hover:-translate-y-4 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-gray-300 before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-white/40 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0 relative flex h-36 w-[22rem] -skew-y-[8deg] select-none flex-col justify-between rounded-xl border-2 border-white/40 bg-gray-100/90 backdrop-blur-sm px-4 py-3 transition-all duration-700 after:absolute after:-right-1 after:top-[-5%] after:h-[110%] after:w-[20rem] after:bg-gradient-to-l after:from-white after:to-transparent after:content-[''] hover:border-white/80 hover:bg-gray-100 [&>*]:flex [&>*]:items-center [&>*]:gap-2">
+                        <div class="z-10">
+                            <span class="relative inline-flex flex-shrink-0 rounded-full bg-[#3B6255] p-2 justify-center items-center" style="width: 36px; height: 36px;">
+                                <span style="font-size: 1rem; color: white;">🎵</span>
+                            </span>
+                            <p class="text-xl font-medium text-[#2C3E3A] pl-2">Music</p>
+                        </div>
+                        <p class="whitespace-nowrap text-lg text-[#2C3E3A] z-10 w-full overflow-hidden text-ellipsis">Add or update music</p>
+                        <p class="text-sm font-medium text-[#8BA49A] z-10">Contribute Here →</p>
+                    </div>
+
+                    <!-- Venues Card -->
+                    <div style="grid-area: stack; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" class="translate-x-24 translate-y-24 hover:-translate-y-2 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-gray-300 before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-white/40 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0 relative flex h-36 w-[22rem] -skew-y-[8deg] select-none flex-col justify-between rounded-xl border-2 border-white/40 bg-gray-100/90 backdrop-blur-sm px-4 py-3 transition-all duration-700 after:absolute after:-right-1 after:top-[-5%] after:h-[110%] after:w-[20rem] after:bg-gradient-to-l after:from-white after:to-transparent after:content-[''] hover:border-white/80 hover:bg-gray-100 [&>*]:flex [&>*]:items-center [&>*]:gap-2">
+                        <div class="z-10">
+                            <span class="relative inline-flex flex-shrink-0 rounded-full bg-[#3B6255] p-2 justify-center items-center" style="width: 36px; height: 36px;">
+                                <span style="font-size: 1rem; color: white;">🎤</span>
+                            </span>
+                            <p class="text-xl font-medium text-[#2C3E3A] pl-2">Venues</p>
+                        </div>
+                        <p class="whitespace-nowrap text-lg text-[#2C3E3A] z-10 w-full overflow-hidden text-ellipsis">Update venue information</p>
+                        <p class="text-sm font-medium text-[#8BA49A] z-10">Contribute Here →</p>
+                    </div>
+
+                    <!-- Support Card -->
+                    <div style="grid-area: stack; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" class="translate-x-36 translate-y-36 hover:translate-y-20 relative flex h-36 w-[22rem] -skew-y-[8deg] select-none flex-col justify-between rounded-xl border-2 border-white/40 bg-gray-100/90 backdrop-blur-sm px-4 py-3 transition-all duration-700 after:absolute after:-right-1 after:top-[-5%] after:h-[110%] after:w-[20rem] after:bg-gradient-to-l after:from-white after:to-transparent after:content-[''] hover:border-white/80 hover:bg-gray-100 [&>*]:flex [&>*]:items-center [&>*]:gap-2">
+                        <div class="z-10">
+                            <span class="relative inline-flex flex-shrink-0 rounded-full bg-[#3B6255] p-2 justify-center items-center" style="width: 36px; height: 36px;">
+                                <span style="font-size: 1rem; color: white;">🎚</span>
+                            </span>
+                            <p class="text-xl font-medium text-[#2C3E3A] pl-2">Support</p>
+                        </div>
+                        <p class="whitespace-nowrap text-lg text-[#2C3E3A] z-10 w-full overflow-hidden text-ellipsis">Add support team info</p>
+                        <p class="text-sm font-medium text-[#8BA49A] z-10">Contribute Here →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Interface -->
+    <div class="chat-page" id="chatPage">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        
+        <div class="sidebar" id="sidebar">
+            <div class="logo">GO-GO DB</div>
+            
+            <button class="new-chat-btn" onclick="newChat()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Chat
+            </button>
+            
+            <div class="chat-history-section">
+                <h3 class="section-title">Recent Conversations</h3>
+                <div id="chatHistory"></div>
+            </div>
+        </div>
+        
+        <div class="chat-main">
+            <div class="chat-header">
+                <h2>GO-GO DB Assistant</h2>
+            </div>
+            
+            <div class="chat-area" id="chatArea">
+                <div class="welcome-message" id="welcomeMessage">
+                    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 2.5rem; color: var(--forest); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+                        <!-- Drum Logo - Replace YOUR_DRUM_LOGO_URL with your Dropbox link -->
+                        <img src="https://www.dropbox.com/scl/fi/r771vuy3rhc5oa8fna6wg/Untitled_design-removebg-preview.png?rlkey=xrj7lcnliqcdck7vv8q3vysvd&st=tn8ul4cb&raw=1" 
+                             alt="GO-GO DB Drum" 
+                             style="height: 3.25rem; width: auto; object-fit: contain;"
+                             onerror="this.style.display='none'">
+                        Where You Wanna Go?
+                    </h2>
+                    <p>Your AI companion for exploring the rich history, music, and culture of Washington D.C.'s Go-Go scene.</p>
+                    
+                    <div class="suggestion-chips">
+                        <div class="chip" onclick="sendSuggestion('Tell me about Chuck Brown')">Chuck Brown's Legacy</div>
+                        <div class="chip" onclick="sendSuggestion('What is bounce beat?')">Bounce Beat Explained</div>
+                        <div class="chip" onclick="sendSuggestion('Famous Go-Go venues')">Historic Venues</div>
+                        <div class="chip" onclick="sendSuggestion('Current Go-Go bands')">Today's Scene</div>
+                    </div>
+                </div>
+                
+                <div id="messagesContainer" style="display: none;"></div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div class="input-container">
+                        <textarea 
+                            class="chat-text-input" 
+                            id="chatInput" 
+                            placeholder="Ask about Go-Go music, culture, or history..."
+                            rows="1"
+                            onkeypress="handleKeyPress(event)"
+                            oninput="adjustTextareaHeight(this)"
+                        ></textarea>
+                    </div>
+                    <button class="send-button" onclick="sendMessage()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // DRUM LOGO CONFIGURATION
+        // ============================================
+        // To add your drum logo:
+        // 1. Upload your logo to Dropbox
+        // 2. Get the sharing link
+        // 3. Replace the img src in the "Where You Wanna Go?" heading
+        // 4. The placeholder is: https://www.dropbox.com/YOUR_DRUM_LOGO_URL?raw=1
+        // 5. Make sure to keep ?raw=1 at the end
+        // ============================================
+        
+        // Typing Effect for Placeholder
+        const placeholderPhrases = [
+            "Where was the Maverick Room...",
+            "Who is Buggs...",
+            "What year did Mental Attraction form...",
+            "What was EU original name...",
+            "Who is Rock Mikey...",
+            "Who is the drummer for DC Vybe...",
+            "What year was Work The Walls released...",
+            "Who is the Obsession Band...",
+            "Who is Maxx Kidd...",
+            "Who was the first rapper of MOB..."
+        ];
+        
+        class MiniTyped {
+            constructor(element, options) {
+                this.element = document.querySelector(element);
+                this.strings = options.strings || [];
+                this.typeSpeed = options.typeSpeed || 50;
+                this.backSpeed = options.backSpeed || 30;
+                this.loop = options.loop !== false;
+                this.currentString = 0;
+                this.currentChar = 0;
+                this.isDeleting = false;
+                this.init();
+            }
+            
+            init() {
+                this.type();
+            }
+            
+            type() {
+                const current = this.strings[this.currentString];
+                let displayText = current.substring(0, this.currentChar);
+                
+                if (this.isDeleting) {
+                    this.currentChar--;
+                    displayText = current.substring(0, this.currentChar);
+                } else {
+                    this.currentChar++;
+                }
+                
+                this.element.textContent = displayText;
+                
+                let typeSpeed = this.isDeleting ? this.backSpeed : this.typeSpeed;
+                
+                if (!this.isDeleting && this.currentChar === current.length) {
+                    typeSpeed = 2000; // Pause at the end
+                    this.isDeleting = true;
+                } else if (this.isDeleting && this.currentChar === 0) {
+                    this.isDeleting = false;
+                    this.currentString = (this.currentString + 1) % this.strings.length;
+                    typeSpeed = 500; // Pause before new string
+                }
+                
+                if (this.loop || this.currentString < this.strings.length) {
+                    setTimeout(() => this.type(), typeSpeed);
+                }
+            }
+        }
+        
+        // Initialize typing effect when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            new MiniTyped('#placeholderText', {
+                strings: placeholderPhrases,
+                typeSpeed: 60,
+                backSpeed: 40,
+                loop: true
+            });
+        });
+        
+        // Apply wave background on load
+        window.addEventListener('load', () => {
+            const chatArea = document.getElementById('chatArea');
+            if (chatArea) {
+                chatArea.classList.add('custom-bg-subtle');
+            }
+        });
+        
+        // Chat Management
+        let currentChatId = null;
+        let allChats = {};
+        
+        function showChat() {
+            const transition = document.getElementById('pageTransition');
+            transition.classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('chatPage').style.display = 'block';
+                
+                // Apply background
+                const chatArea = document.getElementById('chatArea');
+                if (chatArea) {
+                    chatArea.classList.add('custom-bg-subtle');
+                }
+                
+                setTimeout(() => {
+                    transition.classList.remove('active');
+                    document.getElementById('chatInput').focus();
+                }, 500);
+            }, 300);
+        }
+        
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+        
+        function newChat() {
+            currentChatId = null;
+            document.getElementById('messagesContainer').innerHTML = '';
+            document.getElementById('messagesContainer').style.display = 'none';
+            document.getElementById('welcomeMessage').style.display = 'block';
+            
+            document.querySelectorAll('.chat-history-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.getElementById('sidebar').classList.remove('mobile-open');
+            document.getElementById('chatInput').focus();
+        }
+        
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function sendSuggestion(text) {
+            document.getElementById('chatInput').value = text;
+            sendMessage();
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                addMessage(text, 'user');
+                input.value = '';
+                input.style.height = 'auto';
+                input.focus();
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            welcomeMessage.style.display = 'none';
+            messagesContainer.style.display = 'flex';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = text;
+            
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            if (type === 'user' && !currentChatId) {
+                currentChatId = Date.now().toString();
+                allChats[currentChatId] = {
+                    id: currentChatId,
+                    title: text.substring(0, 30) + (text.length > 30 ? '...' : ''),
+                    messages: [],
+                    timestamp: new Date()
+                };
+                updateChatHistory();
+            }
+            
+            if (currentChatId && allChats[currentChatId]) {
+                allChats[currentChatId].messages.push({ text, type });
+            }
+            
+            if (type === 'user') {
+                showTypingIndicator();
+                callN8nWebhook(text);
+            }
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator';
+            typingContent.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            
+            typingDiv.appendChild(typingContent);
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        function updateChatHistory() {
+            const historyContainer = document.getElementById('chatHistory');
+            historyContainer.innerHTML = '';
+            
+            const sortedChats = Object.values(allChats).sort((a, b) => b.timestamp - a.timestamp);
+            
+            sortedChats.forEach((chat, index) => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-history-item';
+                if (chat.id === currentChatId) {
+                    chatItem.classList.add('active');
+                }
+                chatItem.textContent = chat.title;
+                chatItem.onclick = () => loadChat(chat.id);
+                chatItem.style.animationDelay = `${index * 0.05}s`;
+                
+                historyContainer.appendChild(chatItem);
+            });
+        }
+        
+        function loadChat(chatId) {
+            currentChatId = chatId;
+            const chat = allChats[chatId];
+            
+            if (chat) {
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = '';
+                document.getElementById('welcomeMessage').style.display = 'none';
+                messagesContainer.style.display = 'flex';
+                
+                chat.messages.forEach((msg, index) => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.type}`;
+                    messageDiv.style.animationDelay = `${index * 0.05}s`;
+                    
+                    const messageContent = document.createElement('div');
+                    messageContent.className = 'message-content';
+                    messageContent.textContent = msg.text;
+                    
+                    messageDiv.appendChild(messageContent);
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                updateChatHistory();
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        }
+        
+        // n8n Chat Trigger Integration
+        const N8N_WEBHOOK_URL = 'https://n8n.srv856673.hstgr.cloud/webhook/e1b3e2b8-314a-48d0-a9fc-90e4cf5635c7/chat';
+        
+        async function callN8nWebhook(message) {
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chatInput: message  // Changed from 'message' to 'chatInput'
+                    })
+                });
+                
+                const data = await response.json();
+                removeTypingIndicator();
+                
+                if (data.output) {
+                    addMessage(data.output, 'assistant');
+                } else {
+                    addMessage(JSON.stringify(data), 'assistant');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                removeTypingIndicator();
+                addMessage("Connection error. Please check if the n8n workflow is active.", 'assistant');
+            }
+        }
+    </script>
+    <script>
+        // Three.js Background Implementation (Mesh Gradient + Orbit)
+        const canvas = document.getElementById('threejs-canvas');
+        if (canvas) {
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 2; // Match React Three Fiber default camera z
+
+            // --- Wireframe MeshGradient Implementation ---
+            const vertexShader = `
+              uniform float time;
+              uniform float speed;
+              varying vec2 vUv;
+              varying vec3 vPosition;
+              
+              void main() {
+                vUv = uv;
+                vPosition = position;
+                
+                vec3 pos = position;
+                // Add waving motion
+                float noise = sin(pos.x * 2.5 + time * speed) * cos(pos.y * 2.5 + time * speed * 0.8) * 0.25;
+                noise += sin(pos.x * 5.0 - time * speed * 1.5) * 0.1;
+                pos.z += noise;
+                
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+              }
+            `;
+
+            const fragmentShader = `
+              uniform float time;
+              uniform vec3 c1;
+              uniform vec3 c2;
+              uniform vec3 c3;
+              uniform vec3 c4;
+              varying vec2 vUv;
+              varying vec3 vPosition;
+              
+              void main() {
+                // Determine color based on depth (z)
+                float v = vPosition.z * 4.0 + 0.5; // push 0..1 range
+                
+                vec3 col = mix(c1, c2, smoothstep(0.0, 0.33, v));
+                col = mix(col, c3, smoothstep(0.33, 0.66, v));
+                col = mix(col, c4, smoothstep(0.66, 1.0, v));
+                
+                gl_FragColor = vec4(col, 0.3);
+              }
+            `;
+
+            const uniforms = {
+                time: { value: 0 },
+                speed: { value: 0.5 },
+                c1: { value: new THREE.Color("#000000") }, // Black
+                c2: { value: new THREE.Color("#1a1a1a") }, // Very dark grey
+                c3: { value: new THREE.Color("#333333") }, // Dark grey
+                c4: { value: new THREE.Color("#ffffff") }  // White
+            };
+
+            const planeGeometry = new THREE.PlaneGeometry(8, 8, 64, 64);
+            const planeMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                wireframe: true, // Key feature of MeshGradient in wireframe mode
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            const meshGradient = new THREE.Mesh(planeGeometry, planeMaterial);
+            meshGradient.rotation.x = -Math.PI / 3; // Tilt it for landscape look
+            meshGradient.position.y = -0.5;
+            scene.add(meshGradient);
+
+            // --- DotOrbit Implementation ---
+            const orbitGroup = new THREE.Group();
+            const ringCount = 6;
+            for(let i=0; i<ringCount; i++) {
+                const radius = 0.6 + i * 0.4;
+                
+                // Orbit path 
+                const pathGeo = new THREE.RingGeometry(radius - 0.01, radius, 64);
+                const pathMat = new THREE.MeshBasicMaterial({ color: 0xcccccc, side: THREE.DoubleSide, transparent: true, opacity: 0.1 });
+                const ring = new THREE.Mesh(pathGeo, pathMat);
+                orbitGroup.add(ring);
+
+                // Add multiple dots per ring
+                const dotsPerRing = Math.floor(Math.random() * 3) + 1;
+                for (let j=0; j<dotsPerRing; j++) {
+                    const dotGeo = new THREE.CircleGeometry(0.03, 16);
+                    const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+                    const dot = new THREE.Mesh(dotGeo, dotMat);
+                    
+                    // Store custom orbit attributes
+                    dot.userData = {
+                        radius: radius,
+                        angle: (Math.PI * 2 / dotsPerRing) * j + Math.random(),
+                        speed: (0.8 - Math.random() * 0.3) * (i % 2 === 0 ? 1 : -1)
+                    };
+                    orbitGroup.add(dot);
+                }
+            }
+            scene.add(orbitGroup);
+
+            const clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                
+                // Update MeshGradient
+                uniforms.time.value = elapsedTime;
+                meshGradient.rotation.z = Math.sin(elapsedTime * 0.2) * 0.1;
+
+                // Update DotOrbit
+                orbitGroup.children.forEach(child => {
+                    if(child.userData && child.userData.radius !== undefined) {
+                        child.userData.angle += child.userData.speed * 0.015;
+                        child.position.x = Math.cos(child.userData.angle) * child.userData.radius;
+                        child.position.y = Math.sin(child.userData.angle) * child.userData.radius;
+                    }
+                });
+                
+                // Slowly rotate the whole orbit system
+                orbitGroup.rotation.x = elapsedTime * 0.05;
+                orbitGroup.rotation.y = elapsedTime * 0.08;
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resizing
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    </script>
+</body>
+</html>
